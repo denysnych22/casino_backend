@@ -30,7 +30,7 @@ export class AuthService {
 
   async checkToken(token: string) {
     try {
-      const payload = this.jwtService.verify(token); // кине помилку, якщо токен невалідний
+      const payload = this.jwtService.verify(token);
       return payload;
     } catch (error) {
       throw new UnauthorizedException();
