@@ -6,11 +6,17 @@ import { TokenDto } from './dto/token.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+  @Post()
+  validateUser(@Body() tokenDto: TokenDto) {
+    return this.authService.checkUserValidity(tokenDto);
+  }
+
   @Post('/login')
   loginUser(@Body() userData: loginUserDto) {
     console.log(userData);
     return this.authService.signIn(userData.email, userData.password);
   }
+
   @Post('/check-token')
   checkToken(@Body() tokenDto: TokenDto) {
     return this.authService.checkToken(tokenDto.access_token);

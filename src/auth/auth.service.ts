@@ -8,6 +8,8 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { checkHashedPassword } from '../utils/hashPassword';
 import { UserService } from '../user/user.service';
+import { JwtPayload } from './auth.interface';
+
 
 @Injectable()
 export class AuthService {
@@ -29,9 +31,9 @@ export class AuthService {
     };
   }
 
-  async checkToken(token: string) {
+  async checkToken(token: string): Promise<JwtPayload> {
     try {
-      const payload = this.jwtService.verify(token); // кине помилку, якщо токен невалідний
+      const payload = this.jwtService.verify<JwtPayload>(token);
       return payload;
     } catch (error) {
       throw new UnauthorizedException();
@@ -40,9 +42,6 @@ export class AuthService {
 
   async checkUserValidity({ access_token }: { access_token: string }) {
     const userAuthInfo = await this.checkToken(access_token);
-    if (!userAuthInfo) {
-      throw new UnauthorizedException();
-    }
     const userInfo = await this.userService.findUser(userAuthInfo.email);
     if (!userInfo) {
       throw new NotFoundException();

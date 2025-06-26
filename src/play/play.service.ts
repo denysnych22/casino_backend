@@ -42,6 +42,11 @@ export class PlayService {
       budget -= 10;
     }
 
-    return this.userService.editUserPointsHandler(user.email, budget);
+    const updatedPoints = await this.userService.editUserPointsHandler(user.email, budget);
+
+    return {
+      slot: slot,
+      points: updatedPoints
+    }
   }
 }
