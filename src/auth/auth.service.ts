@@ -2,6 +2,7 @@ import {
   forwardRef,
   Inject,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -30,10 +31,22 @@ export class AuthService {
 
   async checkToken(token: string) {
     try {
-      const payload = this.jwtService.verify(token);
+      const payload = this.jwtService.verify(token); // кине помилку, якщо токен невалідний
       return payload;
     } catch (error) {
       throw new UnauthorizedException();
     }
+  }
+
+  async checkUserValidity({ access_token }: { access_token: string }) {
+    const userAuthInfo = await this.checkToken(access_token);
+    if (!userAuthInfo) {
+      throw new UnauthorizedException();
+    }
+    const userInfo = await this.userService.findUser(userAuthInfo.email);
+    if (!userInfo) {
+      throw new NotFoundException();
+    }
+    return userInfo;
   }
 }

@@ -4,20 +4,23 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import spinCheat from './utils/spinCheat';
 import spinDrum from './utils/spinDrum';
 import { UserService } from '../user/user.service';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class PlayService {
   constructor(
     @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
+    private readonly authService: AuthService,
   ) {}
 
-  async spinAnalyze(userData: { email: string }) {
-    const user = await this.userService.findUser(userData.email);
+  async spinAnalyze({ access_token }: { access_token: string }) {
+    const user = await this.authService.checkUserValidity({ access_token });
 
     let budget = user.points as number;
     const rewards = {
@@ -39,6 +42,6 @@ export class PlayService {
       budget -= 10;
     }
 
-    return this.userService.editUserTokenHandler(userData.email, budget);
+    return this.userService.editUserPointsHandler(user.email, budget);
   }
 }

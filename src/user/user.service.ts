@@ -5,7 +5,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
+  NotFoundException, UnauthorizedException,
 } from '@nestjs/common';
 import { hashPassword } from '../utils/hashPassword';
 import { PrismaService } from '../prisma/prisma.service';
@@ -43,7 +43,6 @@ export class UserService {
           HttpStatus.CONFLICT,
         );
       }
-      console.log(error);
       throw new InternalServerErrorException();
     }
   }
@@ -61,7 +60,7 @@ export class UserService {
     return user;
   }
 
-  async editUserTokenHandler(email: string, points: number) {
+  async editUserPointsHandler(email: string, points: number) {
     try {
       const updatedUser = await this.prismaService.user.update({
         where: { email },
@@ -74,5 +73,19 @@ export class UserService {
     } catch (err) {
       throw new InternalServerErrorException();
     }
+  }
+
+  async addUserPointsHandler({
+    points_to_add,
+    access_token,
+  }: {
+    points_to_add: number;
+    access_token: string;
+  }) {
+    const userInfo = await this.authService.checkUserValidity({ access_token });
+    return this.editUserPointsHandler(
+      userInfo.email,
+      (userInfo.points as number) + points_to_add,
+    );
   }
 }
